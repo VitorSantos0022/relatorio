@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Relatórios e Dashboard - Busca e Paradeiro | Cruz Vermelha Brasileira</title>
+  <title>Relatórios e Dashboard | Cruz Vermelha Brasileira</title>
   
   <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Chart.js para Gráficos Modernos -->
+  <!-- Chart.js para Gráficos -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- SheetJS para Exportação em XLSX -->
+  <!-- SheetJS para Exportação XLSX -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
   <style>
@@ -33,6 +33,122 @@
     body {
       background-color: var(--cvb-gray-bg);
       color: var(--cvb-dark);
+      padding: 0;
+      margin: 0;
+    }
+
+    /* =====================================================================
+     * TELA DE LOGIN (AUTENTICAÇÃO EXCLUSIVA VIA SUPABASE AUTH)
+     * ===================================================================== */
+    #loginScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(135deg, rgba(185,28,28,0.95), rgba(31,41,55,0.95));
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      padding: 20px;
+    }
+
+    .login-card {
+      background: white;
+      width: 100%;
+      max-width: 400px;
+      padding: 35px 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      text-align: center;
+      border-top: 6px solid var(--cvb-red);
+    }
+
+    .login-card .logo {
+      font-size: 3rem;
+      color: var(--cvb-red);
+      margin-bottom: 10px;
+    }
+
+    .login-card h2 {
+      font-size: 1.3rem;
+      color: var(--cvb-dark);
+      margin-bottom: 5px;
+    }
+
+    .login-card p {
+      font-size: 0.85rem;
+      color: var(--cvb-text-muted);
+      margin-bottom: 25px;
+    }
+
+    .login-form .form-group {
+      text-align: left;
+      margin-bottom: 15px;
+    }
+
+    .login-form label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--cvb-dark);
+      margin-bottom: 5px;
+    }
+
+    .login-form input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid var(--cvb-border);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .login-form input:focus {
+      border-color: var(--cvb-red);
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      background: var(--cvb-red);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.2s;
+    }
+
+    .btn-login:hover {
+      background: var(--cvb-red-hover);
+    }
+
+    .btn-login:disabled {
+      background: #9CA3AF;
+      cursor: not-allowed;
+    }
+
+    #loginError {
+      color: #DC2626;
+      font-size: 0.82rem;
+      margin-top: 12px;
+      display: none;
+      font-weight: 600;
+      background: #FEE2E2;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #FCA5A5;
+    }
+
+    /* =====================================================================
+     * PAINEL PRINCIPAL (DASHBOARD)
+     * ===================================================================== */
+    #dashboardContent {
+      display: none; /* Inicia oculto até validar a sessão */
       padding: 20px;
     }
 
@@ -41,7 +157,6 @@
       margin: 0 auto;
     }
 
-    /* Cabeçalho */
     .header {
       background-color: var(--cvb-card-bg);
       border-top: 5px solid var(--cvb-red);
@@ -73,7 +188,17 @@
       color: var(--cvb-text-muted);
     }
 
-    /* Cards de Indicadores */
+    .user-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--cvb-gray-bg);
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -93,26 +218,10 @@
       text-align: center;
     }
 
-    .card-icon {
-      font-size: 1.8rem;
-      margin-bottom: 8px;
-    }
+    .card-icon { font-size: 1.8rem; margin-bottom: 8px; }
+    .card-title { font-size: 0.8rem; color: var(--cvb-text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 5px; }
+    .card-value { font-size: 1.5rem; font-weight: 700; color: var(--cvb-dark); }
 
-    .card-title {
-      font-size: 0.8rem;
-      color: var(--cvb-text-muted);
-      font-weight: 600;
-      text-transform: uppercase;
-      margin-bottom: 5px;
-    }
-
-    .card-value {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--cvb-dark);
-    }
-
-    /* Área de Filtros */
     .filter-section {
       background: var(--cvb-card-bg);
       padding: 20px;
@@ -122,43 +231,10 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.03);
     }
 
-    .filter-section h3 {
-      font-size: 1rem;
-      color: var(--cvb-dark);
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
     .filter-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 15px;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-
-    .form-group label {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--cvb-text-muted);
-    }
-
-    .form-group input, .form-group select {
-      padding: 9px 12px;
-      border: 1px solid var(--cvb-border);
-      border-radius: 6px;
-      font-size: 0.9rem;
-      outline: none;
-    }
-
-    .form-group input:focus, .form-group select:focus {
-      border-color: var(--cvb-red);
     }
 
     .filter-actions {
@@ -168,7 +244,6 @@
       gap: 10px;
     }
 
-    /* Gráficos */
     .charts-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -177,9 +252,7 @@
     }
 
     @media (max-width: 480px) {
-      .charts-grid {
-        grid-template-columns: 1fr;
-      }
+      .charts-grid { grid-template-columns: 1fr; }
     }
 
     .chart-card {
@@ -198,39 +271,27 @@
       padding-left: 8px;
     }
 
-    .chart-container {
-      position: relative;
-      height: 260px;
-      width: 100%;
-    }
+    .chart-container { position: relative; height: 260px; width: 100%; }
 
-    /* Ações de Exportação e Tabela */
     .export-bar {
       display: flex;
-      justify-content: flex-between;
+      justify-content: space-between;
       align-items: center;
       margin-bottom: 15px;
       flex-wrap: wrap;
       gap: 10px;
     }
 
-    .btn-group {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
     .btn {
-      padding: 10px 16px;
+      padding: 9px 15px;
       border: none;
       border-radius: 6px;
       font-size: 0.85rem;
       font-weight: 600;
       cursor: pointer;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: background 0.2s;
     }
 
     .btn-red { background: var(--cvb-red); color: white; }
@@ -240,7 +301,6 @@
     .btn-green { background: #059669; color: white; }
     .btn-green:hover { background: #047857; }
 
-    /* Tabela de Relatório */
     .table-card {
       background: var(--cvb-card-bg);
       border-radius: 8px;
@@ -250,48 +310,15 @@
       margin-bottom: 25px;
     }
 
-    .table-wrapper {
-      overflow-x: auto;
-    }
+    .table-wrapper { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
+    th { background: #F9FAFB; color: var(--cvb-text-muted); padding: 12px 15px; font-weight: 600; border-bottom: 1px solid var(--cvb-border); white-space: nowrap; }
+    td { padding: 12px 15px; border-bottom: 1px solid var(--cvb-border); white-space: nowrap; }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-      font-size: 0.85rem;
-    }
-
-    th {
-      background: #F9FAFB;
-      color: var(--cvb-text-muted);
-      padding: 12px 15px;
-      font-weight: 600;
-      border-bottom: 1px solid var(--cvb-border);
-      white-space: nowrap;
-    }
-
-    td {
-      padding: 12px 15px;
-      border-bottom: 1px solid var(--cvb-border);
-      white-space: nowrap;
-    }
-
-    tr:hover {
-      background: #F9FAFB;
-    }
-
-    .status-badge {
-      padding: 4px 8px;
-      border-radius: 12px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      display: inline-block;
-    }
-
+    .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
     .status-atendimento { background: #FEF3C7; color: #92400E; }
     .status-entregue { background: #D1FAE5; color: #065F46; }
 
-    /* Resumo no fim da tabela */
     .report-summary {
       background: #F9FAFB;
       padding: 20px;
@@ -302,254 +329,251 @@
       gap: 15px;
     }
 
-    .summary-item {
-      text-align: center;
-    }
+    .summary-item { text-align: center; }
+    .summary-item label { display: block; font-size: 0.75rem; color: var(--cvb-text-muted); font-weight: 600; }
+    .summary-item span { font-size: 1.1rem; font-weight: 700; color: var(--cvb-dark); }
 
-    .summary-item label {
-      display: block;
-      font-size: 0.75rem;
-      color: var(--cvb-text-muted);
-      font-weight: 600;
-    }
-
-    .summary-item span {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--cvb-dark);
-    }
-
-    /* Ajustes de Impressão */
     @media print {
-      body { background: white; padding: 0; }
-      .header, .filter-section, .export-bar, .btn { display: none !important; }
-      .container { max-width: 100%; }
-      .card, .chart-card, .table-card { border: none; box-shadow: none; }
-      .charts-grid { page-break-after: always; }
+      #loginScreen, .header, .filter-section, .export-bar, .btn { display: none !important; }
+      #dashboardContent { display: block !important; padding: 0; }
+      body { background: white; }
+      .cards-grid, .charts-grid { page-break-after: always; }
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    
-    <!-- Cabeçalho -->
-    <header class="header">
-      <div class="header-title">
-        <span style="font-size: 2.2rem; color: var(--cvb-red);">✚</span>
-        <div>
-          <h1>Cruz Vermelha Brasileira - Pará</h1>
-          <p>Módulo de Relatórios e Dashboard - Busca e Paradeiro</p>
-        </div>
-      </div>
-    </header>
-
-    <!-- Indicadores (Cards Topo) -->
-    <section class="cards-grid">
-      <div class="card">
-        <span class="card-icon">📋</span>
-        <span class="card-title">Total Fichas</span>
-        <span class="card-value" id="cardTotal">0</span>
-      </div>
-      <div class="card">
-        <span class="card-icon">👧</span>
-        <span class="card-title">Crianças Atendidas</span>
-        <span class="card-value" id="cardCriancas">0</span>
-      </div>
-      <div class="card">
-        <span class="card-icon">✅</span>
-        <span class="card-title">Entregues</span>
-        <span class="card-value" id="cardEntregues">0</span>
-      </div>
-      <div class="card">
-        <span class="card-icon">⏳</span>
-        <span class="card-title">Em Atendimento</span>
-        <span class="card-value" id="cardEmAtendimento">0</span>
-      </div>
-      <div class="card">
-        <span class="card-icon">📅</span>
-        <span class="card-title">Atendimentos Hoje</span>
-        <span class="card-value" id="cardHoje">0</span>
-      </div>
-      <div class="card">
-        <span class="card-icon">📆</span>
-        <span class="card-title">Atendimentos Mês</span>
-        <span class="card-value" id="cardMes">0</span>
-      </div>
-      <div class="card">
-        <span class="card-icon">⏱️</span>
-        <span class="card-title">Tempo Médio</span>
-        <span class="card-value" id="cardTempoMedio">--</span>
-      </div>
-    </section>
-
-    <!-- Filtros de Pesquisa -->
-    <section class="filter-section">
-      <h3>🔍 Filtros de Relatório</h3>
-      <div class="filter-grid">
+  <!-- 1. TELA DE LOGIN (AUTENTICAÇÃO SEGURA VIA SUPABASE AUTH) -->
+  <div id="loginScreen">
+    <div class="login-card">
+      <div class="logo">✚</div>
+      <h2>Cruz Vermelha Brasileira</h2>
+      <p>Acesso Restrito ao Painel Gerencial</p>
+      
+      <form class="login-form" onsubmit="realizarLogin(event)">
         <div class="form-group">
-          <label for="filtroInicio">Data Inicial</label>
-          <input type="date" id="filtroInicio">
+          <label for="loginEmail">E-mail Cadastrado</label>
+          <input type="email" id="loginEmail" placeholder="seu.email@cruzvermelha.org.br" required autocomplete="email">
         </div>
         <div class="form-group">
-          <label for="filtroFim">Data Final</label>
-          <input type="date" id="filtroFim">
+          <label for="loginSenha">Senha</label>
+          <input type="password" id="loginSenha" placeholder="••••••••" required autocomplete="current-password">
         </div>
-        <div class="form-group">
-          <label for="filtroStatus">Status da Ficha</label>
-          <select id="filtroStatus">
-            <option value="">Todos os Status</option>
-            <option value="Procurando">Em Atendimento / Procurando</option>
-            <option value="Entregue">Entregue ao Responsável</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="filtroCrianca">Nome da Criança</label>
-          <input type="text" id="filtroCrianca" placeholder="Digite para buscar...">
-        </div>
-        <div class="form-group">
-          <label for="filtroResponsavel">Nome do Responsável</label>
-          <input type="text" id="filtroResponsavel" placeholder="Digite para buscar...">
-        </div>
-      </div>
-      <div class="filter-actions">
-        <button class="btn btn-gray" onclick="limparFiltros()">Limpar Filtros</button>
-        <button class="btn btn-red" onclick="aplicarFiltros()">Aplicar Filtros</button>
-      </div>
-    </section>
-
-    <!-- Gráficos Gerenciais -->
-    <section class="charts-grid">
-      <div class="chart-card">
-        <h4>Status das Fichas (Em Atendimento × Entregue)</h4>
-        <div class="chart-container">
-          <canvas id="chartStatus"></canvas>
-        </div>
-      </div>
-
-      <div class="chart-card">
-        <h4>Atendimentos por Dia</h4>
-        <div class="chart-container">
-          <canvas id="chartDias"></canvas>
-        </div>
-      </div>
-
-      <div class="chart-card">
-        <h4>Evolução dos Atendimentos</h4>
-        <div class="chart-container">
-          <canvas id="chartEvolucao"></canvas>
-        </div>
-      </div>
-
-      <div class="chart-card">
-        <h4>Grau de Parentesco do Responsável</h4>
-        <div class="chart-container">
-          <canvas id="chartParentesco"></canvas>
-        </div>
-      </div>
-
-      <div class="chart-card" style="grid-column: 1 / -1;">
-        <h4>Atendimentos por Mês</h4>
-        <div class="chart-container">
-          <canvas id="chartMensal"></canvas>
-        </div>
-      </div>
-    </section>
-
-    <!-- Barra de Exportação -->
-    <div class="export-bar">
-      <h3 style="font-size: 1.1rem; color: var(--cvb-dark);">📋 Detalhamento das Fichas</h3>
-      <div class="btn-group">
-        <button class="btn btn-gray" onclick="window.print()">🖨️ Imprimir / PDF</button>
-        <button class="btn btn-green" onclick="exportarExcel()">📊 Exportar Excel (.xlsx)</button>
-        <button class="btn btn-gray" onclick="exportarCSV()">📋 Exportar CSV</button>
-      </div>
+        <button type="submit" class="btn-login" id="btnLoginSubmit">Entrar no Sistema</button>
+        <div id="loginError">E-mail ou senha incorretos.</div>
+      </form>
     </div>
+  </div>
 
-    <!-- Tabela do Relatório -->
-    <section class="table-card">
-      <div class="table-wrapper">
-        <table id="tabelaRelatorio">
-          <thead>
-            <tr>
-              <th>Nº Ficha</th>
-              <th>Data</th>
-              <th>Recebimento</th>
-              <th>Entrega</th>
-              <th>Nome da Criança</th>
-              <th>Responsável</th>
-              <th>Parentesco</th>
-              <th>Status</th>
-              <th>Tempo de Atendimento</th>
-            </tr>
-          </thead>
-          <tbody id="tabelaCorpo">
-            <!-- Inserido dinamicamente via JS -->
-          </tbody>
-        </table>
+  <!-- 2. PAINEL PRINCIPAL (SÓ APARECE APÓS AUTENTICAÇÃO REAL NO SUPABASE) -->
+  <div id="dashboardContent">
+    <div class="container">
+      
+      <header class="header">
+        <div class="header-title">
+          <span style="font-size: 2.2rem; color: var(--cvb-red);">✚</span>
+          <div>
+            <h1>Cruz Vermelha Brasileira - Pará</h1>
+            <p>Módulo de Relatórios e Dashboard - Busca e Paradeiro</p>
+          </div>
+        </div>
+        <div class="user-badge">
+          <span>👤 <span id="userEmailDisplay">autenticando...</span></span>
+          <button class="btn btn-gray" onclick="realizarLogout()" style="padding: 4px 10px; font-size: 0.75rem;">Sair</button>
+        </div>
+      </header>
+
+      <!-- Indicadores (Cards Topo) -->
+      <section class="cards-grid">
+        <div class="card"><span class="card-icon">📋</span><span class="card-title">Total Fichas</span><span class="card-value" id="cardTotal">0</span></div>
+        <div class="card"><span class="card-icon">👧</span><span class="card-title">Crianças Atendidas</span><span class="card-value" id="cardCriancas">0</span></div>
+        <div class="card"><span class="card-icon">✅</span><span class="card-title">Entregues</span><span class="card-value" id="cardEntregues">0</span></div>
+        <div class="card"><span class="card-icon">⏳</span><span class="card-title">Em Atendimento</span><span class="card-value" id="cardEmAtendimento">0</span></div>
+        <div class="card"><span class="card-icon">📅</span><span class="card-title">Atendimentos Hoje</span><span class="card-value" id="cardHoje">0</span></div>
+        <div class="card"><span class="card-icon">📆</span><span class="card-title">Atendimentos Mês</span><span class="card-value" id="cardMes">0</span></div>
+        <div class="card"><span class="card-icon">⏱️</span><span class="card-title">Tempo Médio</span><span class="card-value" id="cardTempoMedio">--</span></div>
+      </section>
+
+      <!-- Filtros -->
+      <section class="filter-section">
+        <h3 style="font-size: 1rem; margin-bottom: 15px;">🔍 Filtros de Relatório</h3>
+        <div class="filter-grid">
+          <div class="form-group"><label>Data Inicial</label><input type="date" id="filtroInicio"></div>
+          <div class="form-group"><label>Data Final</label><input type="date" id="filtroFim"></div>
+          <div class="form-group">
+            <label>Status da Ficha</label>
+            <select id="filtroStatus">
+              <option value="">Todos os Status</option>
+              <option value="Procurando">Em Atendimento / Procurando</option>
+              <option value="Entregue">Entregue ao Responsável</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Nome da Criança</label><input type="text" id="filtroCrianca" placeholder="Buscar..."></div>
+          <div class="form-group"><label>Nome do Responsável</label><input type="text" id="filtroResponsavel" placeholder="Buscar..."></div>
+        </div>
+        <div class="filter-actions">
+          <button class="btn btn-gray" onclick="limparFiltros()">Limpar Filtros</button>
+          <button class="btn btn-red" onclick="aplicarFiltros()">Aplicar Filtros</button>
+        </div>
+      </section>
+
+      <!-- Gráficos -->
+      <section class="charts-grid">
+        <div class="chart-card"><h4>Status das Fichas (Em Atendimento × Entregue)</h4><div class="chart-container"><canvas id="chartStatus"></canvas></div></div>
+        <div class="chart-card"><h4>Atendimentos por Dia</h4><div class="chart-container"><canvas id="chartDias"></canvas></div></div>
+        <div class="chart-card"><h4>Evolução dos Atendimentos</h4><div class="chart-container"><canvas id="chartEvolucao"></canvas></div></div>
+        <div class="chart-card"><h4>Grau de Parentesco do Responsável</h4><div class="chart-container"><canvas id="chartParentesco"></canvas></div></div>
+        <div class="chart-card" style="grid-column: 1 / -1;"><h4>Atendimentos por Mês</h4><div class="chart-container"><canvas id="chartMensal"></canvas></div></div>
+      </section>
+
+      <!-- Exportação e Tabela -->
+      <div class="export-bar">
+        <h3 style="font-size: 1.1rem; color: var(--cvb-dark);">📋 Detalhamento das Fichas</h3>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-gray" onclick="window.print()">🖨️ Imprimir / PDF</button>
+          <button class="btn btn-green" onclick="exportarExcel()">📊 Exportar Excel (.xlsx)</button>
+          <button class="btn btn-gray" onclick="exportarCSV()">📋 Exportar CSV</button>
+        </div>
       </div>
 
-      <!-- Resumo ao Final do Relatório -->
-      <div class="report-summary">
-        <div class="summary-item">
-          <label>Total de Fichas</label>
-          <span id="resumoTotal">0</span>
+      <section class="table-card">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Nº Ficha</th>
+                <th>Data</th>
+                <th>Recebimento</th>
+                <th>Entrega</th>
+                <th>Nome da Criança</th>
+                <th>Responsável</th>
+                <th>Parentesco</th>
+                <th>Status</th>
+                <th>Tempo Atendimento</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaCorpo"></tbody>
+          </table>
         </div>
-        <div class="summary-item">
-          <label>Crianças Entregues</label>
-          <span id="resumoEntregues">0</span>
-        </div>
-        <div class="summary-item">
-          <label>Em Atendimento</label>
-          <span id="resumoAtendimento">0</span>
-        </div>
-        <div class="summary-item">
-          <label>Tempo Médio</label>
-          <span id="resumoTempoMedio">--</span>
-        </div>
-      </div>
-    </section>
 
+        <div class="report-summary">
+          <div class="summary-item"><label>Total de Fichas</label><span id="resumoTotal">0</span></div>
+          <div class="summary-item"><label>Crianças Entregues</label><span id="resumoEntregues">0</span></div>
+          <div class="summary-item"><label>Em Atendimento</label><span id="resumoAtendimento">0</span></div>
+          <div class="summary-item"><label>Tempo Médio</label><span id="resumoTempoMedio">--</span></div>
+        </div>
+      </section>
+
+    </div>
   </div>
 
   <script>
     /* =====================================================================
-     * 1. CONFIGURAÇÃO DO SUPABASE (Mesmas credenciais do projeto atual)
+     * CONFIGURAÇÃO DO SUPABASE
+     * (Cole a sua URL e Chave ANON abaixo)
      * ===================================================================== */
-    const SUPABASE_URL = "SUA_URL_DO_SUPABASE_AQUI"; 
-    const SUPABASE_KEY = "SUA_CHAVE_ANON_DO_SUPABASE_AQUI";
+    const SUPABASE_URL = "https://lugixdejmgmwqntjujkg.supabase.co"; 
+    const SUPABASE_KEY = "sb_publishable_-p2f6_jQjQyhV2oGtcZPmg_Yf1ugtKv";
 
     let supabaseClient = null;
     if (typeof supabase !== 'undefined' && SUPABASE_URL !== "SUA_URL_DO_SUPABASE_AQUI") {
       supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     }
 
-    // Armazenamento de dados locais
     let dadosOriginais = [];
     let dadosFiltrados = [];
-
-    // Instâncias dos Gráficos
     let chartStatusInst, chartDiasInst, chartEvolucaoInst, chartParentescoInst, chartMensalInst;
 
-    // Inicialização ao carregar a página
-    window.addEventListener('DOMContentLoaded', () => {
-      carregarDados();
+    /* =====================================================================
+     * CHECAGEM INICIAL DE SESSÃO DO USUÁRIO (MANTÉM LOGADO AO ATUALIZAR)
+     * ===================================================================== */
+    window.addEventListener('DOMContentLoaded', async () => {
+      if (!supabaseClient) {
+        console.warn("URL e KEY do Supabase ainda não foram preenchidas no código.");
+        return;
+      }
+
+      // Verifica se o usuário já possui uma sessão ativa no navegador
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session && session.user) {
+        liberarAcesso(session.user.email);
+      }
     });
 
     /* =====================================================================
-     * 2. CARREGAMENTO DOS DADOS DO SUPABASE
-     * Preserva o ID original sem renumerar registros apagados.
+     * LOGIN EXCLUSIVO E REAL VIA SUPABASE AUTH
+     * ===================================================================== */
+    async function realizarLogin(event) {
+      event.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const senha = document.getElementById('loginSenha').value;
+      const errorDiv = document.getElementById('loginError');
+      const btnSubmit = document.getElementById('btnLoginSubmit');
+
+      errorDiv.style.display = 'none';
+      btnSubmit.disabled = true;
+      btnSubmit.innerText = 'Autenticando...';
+
+      if (!supabaseClient) {
+        errorDiv.innerText = "Erro: Lembre-se de colar a URL e KEY do Supabase nas linhas 253 e 254 do código.";
+        errorDiv.style.display = 'block';
+        btnSubmit.disabled = false;
+        btnSubmit.innerText = 'Entrar no Sistema';
+        return;
+      }
+
+      try {
+        // Autenticação oficial e segura no Supabase
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+          email: email,
+          password: senha
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        if (data && data.user) {
+          liberarAcesso(data.user.email);
+        }
+      } catch (err) {
+        console.error("Falha no login Supabase:", err.message);
+        errorDiv.innerText = "E-mail ou senha incorretos.";
+        errorDiv.style.display = 'block';
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerText = 'Entrar no Sistema';
+      }
+    }
+
+    function liberarAcesso(email) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('dashboardContent').style.display = 'block';
+      document.getElementById('userEmailDisplay').innerText = email;
+      carregarDados();
+    }
+
+    async function realizarLogout() {
+      if (supabaseClient) {
+        await supabaseClient.auth.signOut();
+      }
+      document.getElementById('dashboardContent').style.display = 'none';
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('loginSenha').value = '';
+    }
+
+    /* =====================================================================
+     * CARREGAMENTO E PROCESSAMENTO DOS DADOS DO BANCO SUPABASE
      * ===================================================================== */
     async function carregarDados() {
       try {
         if (!supabaseClient) {
-          console.warn("Supabase não configurado. Carregando dados demonstrativos.");
-          dadosOriginais = obterDadosDemonstrativos();
+          dadosOriginais = [];
         } else {
           const { data, error } = await supabaseClient
             .from('busca_paradeiro')
             .select('*')
-            .order('id', { ascending: true }); // Preserva o ID original fixo
+            .order('id', { ascending: true });
 
           if (error) throw error;
           dadosOriginais = data || [];
@@ -559,14 +583,11 @@
         atualizarDashboard();
 
       } catch (err) {
-        console.error("Erro ao carregar fichas:", err);
-        alert("Erro ao conectar ao banco de dados na nuvem.");
+        console.error("Erro ao carregar fichas do Supabase:", err);
+        alert("Erro ao buscar dados. Verifique a conexão ou se a tabela possui políticas (RLS) liberadas.");
       }
     }
 
-    /* =====================================================================
-     * 3. PROCESSAMENTO DE INDICADORES, TABELA E GRÁFICOS
-     * ===================================================================== */
     function atualizarDashboard() {
       atualizarCards();
       atualizarTabela();
@@ -584,27 +605,18 @@
       const hojeCount = dadosFiltrados.filter(d => d.data_registro === hojeStr).length;
       const mesCount = dadosFiltrados.filter(d => (d.data_registro || '').startsWith(mesAtualStr)).length;
 
-      // Cálculo do Tempo Médio (em minutos)
-      let somaMinutos = 0;
-      let qtdComTempo = 0;
-
+      let somaMinutos = 0, qtdComTempo = 0;
       dadosFiltrados.forEach(d => {
         if (d.hora_registro && d.hora_entrega) {
           const [h1, m1] = d.hora_registro.split(':').map(Number);
           const [h2, m2] = d.hora_entrega.split(':').map(Number);
           const diff = (h2 * 60 + m2) - (h1 * 60 + m1);
-          if (diff > 0) {
-            somaMinutos += diff;
-            qtdComTempo++;
-          }
+          if (diff > 0) { somaMinutos += diff; qtdComTempo++; }
         }
       });
 
-      const tempoMedioTexto = qtdComTempo > 0 
-        ? `${Math.round(somaMinutos / qtdComTempo)} min` 
-        : '--';
+      const tempoMedioTexto = qtdComTempo > 0 ? `${Math.round(somaMinutos / qtdComTempo)} min` : '--';
 
-      // Atualiza Cards do Topo
       document.getElementById('cardTotal').innerText = total;
       document.getElementById('cardCriancas').innerText = total;
       document.getElementById('cardEntregues').innerText = entregues;
@@ -613,7 +625,6 @@
       document.getElementById('cardMes').innerText = mesCount;
       document.getElementById('cardTempoMedio').innerText = tempoMedioTexto;
 
-      // Atualiza Resumo no Rodapé do Relatório
       document.getElementById('resumoTotal').innerText = total;
       document.getElementById('resumoEntregues').innerText = entregues;
       document.getElementById('resumoAtendimento').innerText = emAtendimento;
@@ -625,7 +636,7 @@
       tbody.innerHTML = '';
 
       if (dadosFiltrados.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 20px; color: var(--cvb-text-muted);">Nenhuma ficha encontrada com os filtros aplicados.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 20px; color: var(--cvb-text-muted);">Nenhuma ficha encontrada.</td></tr>`;
         return;
       }
 
@@ -634,7 +645,6 @@
         const statusClass = isEntregue ? 'status-entregue' : 'status-atendimento';
         const statusTexto = isEntregue ? 'Entregue' : 'Em Atendimento';
 
-        // Cálculo de Tempo Individual
         let tempoAtendimento = '--';
         if (item.hora_registro && item.hora_entrega) {
           const [h1, m1] = item.hora_registro.split(':').map(Number);
@@ -659,28 +669,17 @@
       });
     }
 
-    /* =====================================================================
-     * 4. RENDERIZAÇÃO DOS GRÁFICOS (Chart.js)
-     * ===================================================================== */
     function renderizarGraficos() {
-      // 1. Gráfico de Pizza: Status
       const entregues = dadosFiltrados.filter(d => (d.status || '').toLowerCase() === 'entregue').length;
       const emAtendimento = dadosFiltrados.length - entregues;
 
       if (chartStatusInst) chartStatusInst.destroy();
       chartStatusInst = new Chart(document.getElementById('chartStatus'), {
         type: 'doughnut',
-        data: {
-          labels: ['Em Atendimento', 'Entregue'],
-          datasets: [{
-            data: [emAtendimento, entregues],
-            backgroundColor: ['#F59E0B', '#10B981']
-          }]
-        },
+        data: { labels: ['Em Atendimento', 'Entregue'], datasets: [{ data: [emAtendimento, entregues], backgroundColor: ['#F59E0B', '#10B981'] }] },
         options: { responsive: true, maintainAspectRatio: false }
       });
 
-      // 2. Gráfico de Barras: Atendimentos por Dia
       const diasMap = {};
       dadosFiltrados.forEach(d => {
         const dataFmt = formatarData(d.data_registro);
@@ -690,35 +689,17 @@
       if (chartDiasInst) chartDiasInst.destroy();
       chartDiasInst = new Chart(document.getElementById('chartDias'), {
         type: 'bar',
-        data: {
-          labels: Object.keys(diasMap),
-          datasets: [{
-            label: 'Atendimentos',
-            data: Object.values(diasMap),
-            backgroundColor: '#B91C1C'
-          }]
-        },
+        data: { labels: Object.keys(diasMap), datasets: [{ label: 'Atendimentos', data: Object.values(diasMap), backgroundColor: '#B91C1C' }] },
         options: { responsive: true, maintainAspectRatio: false }
       });
 
-      // 3. Gráfico de Linhas: Evolução Temporal
       if (chartEvolucaoInst) chartEvolucaoInst.destroy();
       chartEvolucaoInst = new Chart(document.getElementById('chartEvolucao'), {
         type: 'line',
-        data: {
-          labels: Object.keys(diasMap),
-          datasets: [{
-            label: 'Evolução do Atendimento',
-            data: Object.values(diasMap),
-            borderColor: '#1F2937',
-            tension: 0.3,
-            fill: false
-          }]
-        },
+        data: { labels: Object.keys(diasMap), datasets: [{ label: 'Evolução', data: Object.values(diasMap), borderColor: '#1F2937', tension: 0.3 }] },
         options: { responsive: true, maintainAspectRatio: false }
       });
 
-      // 4. Gráfico de Barras: Grau de Parentesco
       const parentescoMap = {};
       dadosFiltrados.forEach(d => {
         const par = d.grau_parentesco || d.parentesco || 'Outros';
@@ -728,18 +709,10 @@
       if (chartParentescoInst) chartParentescoInst.destroy();
       chartParentescoInst = new Chart(document.getElementById('chartParentesco'), {
         type: 'bar',
-        data: {
-          labels: Object.keys(parentescoMap),
-          datasets: [{
-            label: 'Quantidade',
-            data: Object.values(parentescoMap),
-            backgroundColor: '#4B5563'
-          }]
-        },
+        data: { labels: Object.keys(parentescoMap), datasets: [{ label: 'Quantidade', data: Object.values(parentescoMap), backgroundColor: '#4B5563' }] },
         options: { responsive: true, maintainAspectRatio: false }
       });
 
-      // 5. Gráfico Mensal
       const mesesMap = {};
       dadosFiltrados.forEach(d => {
         if (d.data_registro) {
@@ -751,21 +724,11 @@
       if (chartMensalInst) chartMensalInst.destroy();
       chartMensalInst = new Chart(document.getElementById('chartMensal'), {
         type: 'bar',
-        data: {
-          labels: Object.keys(mesesMap),
-          datasets: [{
-            label: 'Total de Fichas Registradas por Mês',
-            data: Object.values(mesesMap),
-            backgroundColor: '#991B1B'
-          }]
-        },
+        data: { labels: Object.keys(mesesMap), datasets: [{ label: 'Total Fichas por Mês', data: Object.values(mesesMap), backgroundColor: '#991B1B' }] },
         options: { responsive: true, maintainAspectRatio: false }
       });
     }
 
-    /* =====================================================================
-     * 5. FILTROS E EXPORTAÇÃO
-     * ===================================================================== */
     function aplicarFiltros() {
       const inicio = document.getElementById('filtroInicio').value;
       const fim = document.getElementById('filtroFim').value;
@@ -775,26 +738,15 @@
 
       dadosFiltrados = dadosOriginais.filter(item => {
         let ok = true;
-
         if (inicio && item.data_registro < inicio) ok = false;
         if (fim && item.data_registro > fim) ok = false;
-        
         if (status) {
           const isEntregue = (item.status || '').toLowerCase() === 'entregue';
           if (status === 'Entregue' && !isEntregue) ok = false;
           if (status === 'Procurando' && isEntregue) ok = false;
         }
-
-        if (crianca) {
-          const nomeC = (item.nome_desaparecido || item.nome_crianca || '').toLowerCase();
-          if (!nomeC.includes(crianca)) ok = false;
-        }
-
-        if (responsavel) {
-          const nomeR = (item.nome_responsavel || '').toLowerCase();
-          if (!nomeR.includes(responsavel)) ok = false;
-        }
-
+        if (crianca && !(item.nome_desaparecido || item.nome_crianca || '').toLowerCase().includes(crianca)) ok = false;
+        if (responsavel && !(item.nome_responsavel || '').toLowerCase().includes(responsavel)) ok = false;
         return ok;
       });
 
@@ -807,7 +759,6 @@
       document.getElementById('filtroStatus').value = '';
       document.getElementById('filtroCrianca').value = '';
       document.getElementById('filtroResponsavel').value = '';
-
       dadosFiltrados = [...dadosOriginais];
       atualizarDashboard();
     }
@@ -851,26 +802,6 @@
       if (partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
       return dataStr;
     }
-
-    /* Dados para teste caso esteja rodando offline */
-    function obterDadosDemonstrativos() {
-      const hoje = new Date().toISOString().split('T')[0];
-      return [
-        { id: 1, data_registro: hoje, hora_registro: '10:00', hora_entrega: '10:30', nome_desaparecido: 'Lucas Silva', nome_responsavel: 'Maria Silva', grau_parentesco: 'Mãe', status: 'Entregue' },
-        { id: 2, data_registro: hoje, hora_registro: '11:15', hora_entrega: null, nome_desaparecido: 'Ana Souza', nome_responsavel: 'Carlos Souza', grau_parentesco: 'Pai', status: 'Procurando' },
-        { id: 3, data_registro: '2026-07-28', hora_registro: '14:00', hora_entrega: '14:45', nome_desaparecido: 'Gabriel Lima', nome_responsavel: 'Fernanda Lima', grau_parentesco: 'Tia', status: 'Entregue' }
-      ];
-    }
   </script>
 </body>
 </html>
-```eof
-
----
-
-### 📌 Destaques e Atendimento aos Requisitos:
-1. **Preservação de IDs Fixos:** O código utiliza a instrução `.order('id', { ascending: true })` na busca no Supabase, mantendo intacta a numeração original das fichas mesmo se alguma ficha duplicada for excluída do banco.
-2. **Visual Cruz Vermelha Brasileira:** Layout limpo e moderno com aplicação das cores institucionais (Vermelho `#B91C1C`, Cinza e Branco).
-3. **Indicadores em Cards:** Exibe total de fichas, crianças atendidas, entregues, em atendimento, atendimentos de hoje, do mês e tempo médio.
-4. **Gráficos Dinâmicos:** Inclui pizza/doughnut para status, barras para atendimentos diários, linhas para evolução, barras de grau de parentesco e consolidado mensal.
-5. **Exportação Completa:** Botões para impressão/PDF nativo do navegador, planilha Excel (`.xlsx`) e arquivo `.csv`.
