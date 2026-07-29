@@ -507,49 +507,53 @@ if (typeof supabase !== 'undefined' && SUPABASE_URL && SUPABASE_KEY) {
     /* =====================================================================
      * LOGIN EXCLUSIVO E REAL VIA SUPABASE AUTH
      * ===================================================================== */
-    async function realizarLogin(event) {
-      event.preventDefault();
-      const email = document.getElementById('loginEmail').value;
-      const senha = document.getElementById('loginSenha').value;
-      const errorDiv = document.getElementById('loginError');
-      const btnSubmit = document.getElementById('btnLoginSubmit');
+    aasync function realizarLogin(event) {
+  event.preventDefault();
+  const email = document.getElementById('loginEmail').value;
+  const senha = document.getElementById('loginSenha').value;
+  const errorDiv = document.getElementById('loginError');
+  const btnSubmit = document.getElementById('btnLoginSubmit');
 
-      errorDiv.style.display = 'none';
-      btnSubmit.disabled = true;
-      btnSubmit.innerText = 'Autenticando...';
+  errorDiv.style.display = 'none';
+  btnSubmit.disabled = true;
+  btnSubmit.innerText = 'Autenticando...';
 
-      if (!supabaseClient) {
-        errorDiv.innerText = "Erro: Lembre-se de colar a URL e KEY do Supabase nas linhas 253 e 254 do código.";
-        errorDiv.style.display = 'block';
-        btnSubmit.disabled = false;
-        btnSubmit.innerText = 'Entrar no Sistema';
-        return;
-      }
+  if (!supabaseClient) {
+    errorDiv.innerText = "Erro ao conectar com Supabase. Verifique as credenciais.";
+    errorDiv.style.display = 'block';
+    btnSubmit.disabled = false;
+    btnSubmit.innerText = 'Entrar no Sistema';
+    return;
+  }
 
-      try {
-        // Autenticação oficial e segura no Supabase
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
-          email: email,
-          password: senha
-        });
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email: email,
+      password: senha
+    });
 
-        if (error) {
-          throw error;
-        }
-
-        if (data && data.user) {
-          liberarAcesso(data.user.email);
-        }
-      } catch (err) {
-        console.error("Falha no login Supabase:", err.message);
-        errorDiv.innerText = "E-mail ou senha incorretos.";
-        errorDiv.style.display = 'block';
-      } finally {
-        btnSubmit.disabled = false;
-        btnSubmit.innerText = 'Entrar no Sistema';
-      }
+    if (error) {
+      console.error("Erro Supabase Auth:", error);
+      errorDiv.innerText = error.message === "Invalid login credentials" 
+        ? "E-mail ou senha incorretos." 
+        : "Erro ao autenticar: " + error.message;
+      errorDiv.style.display = 'block';
+      btnSubmit.disabled = false;
+      btnSubmit.innerText = 'Entrar no Sistema';
+      return;
     }
 
+    if (data && data.user) {
+      liberarAcesso(data.user.email);
+    }
+  } catch (err) {
+    console.error("Exceção no login:", err);
+    errorDiv.innerText = "Erro de conexão ao tentar fazer login.";
+    errorDiv.style.display = 'block';
+    btnSubmit.disabled = false;
+    btnSubmit.innerText = 'Entrar no Sistema';
+  }
+}
     function liberarAcesso(email) {
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('dashboardContent').style.display = 'block';
