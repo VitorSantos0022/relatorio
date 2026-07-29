@@ -575,7 +575,7 @@ if (typeof supabase !== 'undefined' && SUPABASE_URL && SUPABASE_KEY) {
           dadosOriginais = [];
         } else {
           const { data, error } = await supabaseClient
-            .from('busca_paradeiro')
+            .from('fichas')
             .select('*')
             .order('id', { ascending: true });
 
