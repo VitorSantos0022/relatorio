@@ -473,12 +473,16 @@
      * (Cole a sua URL e Chave ANON abaixo)
      * ===================================================================== */
     const SUPABASE_URL = "https://lugixdejmgmwqntjujkg.supabase.co"; 
-    const SUPABASE_KEY = "sb_publishable_-p2f6_jQjQyhV2oGtcZPmg_Yf1ugtKv";
+const SUPABASE_KEY = "sb_publishable_-p2f6_jQjQyhV2oGtcZPmg_Yf1ugtKv";
 
-    let supabaseClient = null;
-    if (typeof supabase !== 'undefined' && SUPABASE_URL !== "https://lugixdejmgmwqntjujkg.supabase.co") {
-      supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    }
+let supabaseClient = null;
+
+// Verifica se a biblioteca do Supabase foi carregada e se as variáveis não estão vazias
+if (typeof supabase !== 'undefined' && SUPABASE_URL && SUPABASE_KEY) {
+  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+} else {
+  console.error("Biblioteca do Supabase não encontrada ou credenciais ausentes.");
+}
 
     let dadosOriginais = [];
     let dadosFiltrados = [];
